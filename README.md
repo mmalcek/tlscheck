@@ -4,9 +4,11 @@ Simple command line utility to check TLS version and other TCP handshake details
 Can be usefull e.g. to check SMTP TLS version
 
 ## command line arguments
-- -a Server address (-a myserver.com)
-- -p Server port (-p 443)
+- -a Server address (e.g. myserver.com)
+- -p Server port (e.g. 443)
 - -i Insecure/accepts any certificate 
+- -tmin Min allowed TLS version (SSL, 1.0, 1.1, 1.2, 1.3) default SSL
+- -tmax Max allowed TLS version (SSL, 1.0, 1.1, 1.2, 1.3) default 1.3
 
 ## Output
 Output is valid yaml formated e.g.

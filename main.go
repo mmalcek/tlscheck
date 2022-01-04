@@ -33,16 +33,29 @@ func main() {
 	srvAddress := flag.String("a", "", "Server address")
 	srvPort := flag.Int64("p", 0, "Server port")
 	srvSkipVerify := flag.Bool("i", false, "Insecure - accepts any certificate")
+	tlsMinVersion := flag.String("tmin", "SSL", "minimum TLS version (SSL, 1.0, 1.1, 1.2, 1.3)")
+	tlsMaxVersion := flag.String("tmax", "1.3", "maximum TLS version (SSL, 1.0, 1.1, 1.2, 1.3)")
 	flag.Parse()
 	if *srvAddress == "" || *srvPort == 0 {
 		flag.Usage()
 		return
 	}
 
+	requiredTLSmin, err := setTLSver(*tlsMinVersion)
+	if err != nil {
+		log.Fatal(err)
+	}
+	requiredTLSmax, err := setTLSver(*tlsMaxVersion)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	conn, err := tls.Dial(
 		"tcp",
 		fmt.Sprintf("%s:%d", *srvAddress, *srvPort),
 		&tls.Config{
+			MinVersion:         requiredTLSmin,
+			MaxVersion:         requiredTLSmax,
 			InsecureSkipVerify: *srvSkipVerify,
 		},
 	)
@@ -87,4 +100,21 @@ func main() {
 		log.Fatalf("yaml error: %s\r\n", err.Error())
 	}
 	fmt.Println(string(yamlState))
+}
+
+func setTLSver(ver string) (uint16, error) {
+	switch ver {
+	case "1.3":
+		return tls.VersionTLS13, nil
+	case "1.2":
+		return tls.VersionTLS12, nil
+	case "1.1":
+		return tls.VersionTLS11, nil
+	case "1.0":
+		return tls.VersionTLS10, nil
+	case "SSL":
+		return tls.VersionSSL30, nil
+	default:
+		return 0, fmt.Errorf("unknown TLS version: %s", ver)
+	}
 }
